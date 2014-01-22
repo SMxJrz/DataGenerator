@@ -18,8 +18,11 @@ package org.finra.datagenerator.factory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.finra.datagenerator.impl.HDFSFileOutput;
 import org.finra.datagenerator.impl.LocalFileOutput;
 import org.finra.datagenerator.interfaces.DataOutput;
 
@@ -41,24 +44,74 @@ public class DataOutputFactory {
 	}
 	/**
 	 *
-	 * Returns a DataOutput file based on the filePath you pass in?
+	 * Returns a DataOutput file based on the filePath you pass in
 	 * @param filePath
 	 * @return
 	 * @throws IOException 
+	 * @throws URISyntaxException 
 	 */
-	public DataOutput getDataOutput(String filePath) throws IOException{
-		return getDataOutput(new URL(filePath));
+	public DataOutput getDataOutput(String filePath) throws IOException, URISyntaxException{
+		return getDataOutput(new URI(filePath));
 	}
 	
-	public DataOutput getDataOutput(File theFile) throws IOException{
-		return getDataOutput(new URL("file://" + theFile.getPath()));
-	}
+	/**
+	 * get the data output based on what you pass in through a File object, the filename must start with file:// or hdfs://
+	 * @param theFile
+	 * @return
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	
-	public DataOutput getDataOutput(URL url) throws IOException{
-		if(!url.toString().startsWith("file://")){
-			throw new IOException("Unable to identify the resource type (" + url.toString() + ")");
+	public DataOutput getDataOutput(File theFile) throws IOException, URISyntaxException{
+		if(theFile.toString().startsWith("file")){
+			if(File.separator.equals("\\")){
+				return getDataOutput(new URL(normalizeFileName(theFile.getPath())));
+			}else{
+				return getDataOutput(new URL(theFile.getPath().replaceFirst("/", "//")));	
+			}
+		}else if(theFile.toString().startsWith("hdfs")){
+			if(File.separator.equals("\\")){
+				return getDataOutput(new URI(normalizeFileName(theFile.getPath())));			
+			}else{
+				return getDataOutput(new URI(theFile.getPath().replaceFirst("/", "//")));				
+			}
 		}else{
-			return new LocalFileOutput(url);
+			throw new IOException("Unable to identify the resource type (" + theFile.toString() + ")");
 		}
 	}
+
+	/*
+	 * Private method to convert windows file separators to unix style file separators
+	 */
+	private String normalizeFileName(String fileName){
+		return fileName.replaceFirst("\\\\", "//").replaceAll("\\\\", "/");
+	}
+
+	/**
+	 * Returns a DataOutput object based on the URL you pass in
+	 * @param theURL
+	 * @return
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public DataOutput getDataOutput(URL theURL) throws IOException, URISyntaxException{
+		return getDataOutput(theURL.toURI());
+	}
+	
+	/**
+	 * Returns a DataOutput object based on the URI you pass in
+	 * @param uri
+	 * @return
+	 * @throws IOException
+	 */
+	public DataOutput getDataOutput(URI uri) throws IOException{
+		if(uri.toString().startsWith("file://")){
+			return new LocalFileOutput(uri);
+		}else if(uri.toString().startsWith("hdfs://")){
+			return new HDFSFileOutput(uri);
+		}else{
+			throw new IOException("Unable to identify the resource type (" + uri.toString() + ")");
+		}
+	}
+	
 }

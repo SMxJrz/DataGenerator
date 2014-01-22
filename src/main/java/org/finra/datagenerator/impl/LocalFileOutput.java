@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 
 import org.finra.datagenerator.interfaces.DataOutput;
@@ -33,8 +34,8 @@ public class LocalFileOutput implements DataOutput{
 
 	private File outFile;
 	
-	public LocalFileOutput(URL fileName){
-		this.outFile = new File(fileName.getPath());
+	public LocalFileOutput(URI uri){
+		this.outFile = new File(uri.getPath());
 	}
 	
 	@Override
