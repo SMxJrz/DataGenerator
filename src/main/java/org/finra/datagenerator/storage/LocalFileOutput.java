@@ -34,7 +34,7 @@ public class LocalFileOutput implements DataOutput{
 
 	private File outFile;
 	
-	public LocalFileOutput(URI uri){
+	public LocalFileOutput(URL uri){
 		this.outFile = new File(uri.getPath());
 	}
 	
