@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.finra.datagenerator.interfaces;
+package org.finra.datagenerator.storage;
 
 import java.io.IOException;
 

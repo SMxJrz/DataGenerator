@@ -6,6 +6,13 @@
     <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <repositories>
+        <repository>
+            <id>cloudera</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+    </repositories>
+
     <name>DataGenerator</name>
     <description>A tool that generates test scripts using a given model and templates</description>
     <licenses>
@@ -42,23 +49,32 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -84,14 +100,13 @@
                 </executions>
             </plugin>
 
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
 
@@ -106,6 +121,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/spring.handlers</resource>
@@ -116,7 +133,7 @@
 
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>org.finra.datagenerator.Caller</Main-Class>
+                                        <Main-Class>org.finra.scxmlexec.CmdLine</Main-Class>
                                         <Build-Number>2</Build-Number>
                                     </manifestEntries>
                                 </transformer>
@@ -177,61 +194,23 @@
             </plugin>
 
         </plugins>
-        <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>org.jacoco</groupId>
-        								<artifactId>
-        									jacoco-maven-plugin
-        								</artifactId>
-        								<versionRange>
-        									[0.6.3.201306030806,)
-        								</versionRange>
-        								<goals>
-        									<goal>prepare-agent</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>
-        									org.apache.maven.plugins
-        								</groupId>
-        								<artifactId>
-        									maven-checkstyle-plugin
-        								</artifactId>
-        								<versionRange>
-        									[2.10,)
-        								</versionRange>
-        								<goals>
-        									<goal>check</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
-        </pluginManagement>
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>0.20.205.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -248,24 +227,14 @@
             <version>2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity</artifactId>
-            <version>1.7</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>10.0.1</version>
         </dependency>
-<!--         <dependency> -->
-<!--             <groupId>com.google.guava</groupId> -->
-<!--             <artifactId>guava</artifactId> -->
-<!--             <version>10.0.1</version> -->
-<!--         </dependency> -->
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-jdk1.5</artifactId>
             <version>0.7.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-digester3</artifactId>
-            <version>3.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -287,11 +256,6 @@
             <artifactId>spring-core</artifactId>
             <version>3.1.0.RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity-tools</artifactId>
-            <version>2.0</version>
-        </dependency>
 
         <dependency>
             <groupId>commons-scxml</groupId>
@@ -304,9 +268,10 @@
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>commons-digester</groupId>
-            <artifactId>commons-digester</artifactId>
-            <version>2.1</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-digester3</artifactId>
+            <version>3.2</version>
+            <classifier>with-deps</classifier>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
@@ -334,20 +299,6 @@
             <version>2.7.1</version>
         </dependency>
 
-		<!-- Hadoop -->
-		<dependency>
-      		<groupId>org.apache.hadoop</groupId>
-      		<artifactId>hadoop-client</artifactId>
-     		 <version>2.0.0-mr1-cdh4.4.0</version>
-    	</dependency>
-    	<dependency>
-		    <groupId>jdk.tools</groupId>
-		    <artifactId>jdk.tools</artifactId>
-    	    <version>1.6</version>
-		    <scope>system</scope>
-		    <systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
-		</dependency>
-		<!--  -->
 
         <dependency>
             <groupId>junit</groupId>
